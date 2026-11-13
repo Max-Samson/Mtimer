@@ -38,6 +38,27 @@ npm run lint:fix    # Auto-fix issues
 
 Configuration in `eslint.config.js`.
 
+React Compiler diagnostics use the existing
+`eslint-plugin-react-hooks` recommended rules. Do not re-add the legacy
+`eslint-plugin-react-compiler`: its Zod 3 dependency is affected by
+[GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5).
+The build-time `babel-plugin-react-compiler` remains enabled separately in Vite.
+
+### Temporary Security Override
+
+`package.json` pins **only** `@typescript-eslint/typescript-estree`'s minimatch
+dependency to `11.0.8` for
+[GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+As of 2026-11-13, `typescript-eslint@8.72.2` still requests minimatch `^10.2.2`.
+This crosses a major version: minimatch 11 removes APIs such as `makeRe`, but
+this consumer uses the retained `minimatch(path, pattern, { dot: true })` API.
+Do not apply this override globally to other minimatch consumers.
+
+When TypeScript ESLint supports a patched minimatch release directly, remove
+this override and re-run lint, tests, build, and the full dependency audit
+(`npm audit --include=dev`). Do not downgrade TypeScript ESLint or disable the
+compiler rules just to obtain a clean audit.
+
 ### Prettier
 
 Consistent code formatting.
