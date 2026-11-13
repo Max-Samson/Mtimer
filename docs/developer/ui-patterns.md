@@ -1,5 +1,7 @@
 # UI Patterns
 
+See [UI design contract](./ui-contract.md) for the executable policy and explicit native/shadcn exceptions.
+
 ## Overview
 
 This app uses a modern CSS stack optimized for Tauri desktop applications:
@@ -242,7 +244,7 @@ src/components/
 
 - **layout/** - Structural components that define app regions
 - **titlebar/** - Platform-specific window controls
-- **ui/** - shadcn/ui primitives (don't modify directly)
+- **ui/** - Shared shadcn/ui primitives; change deliberately and regression-test all consumers
 - **Feature folders** - Group related components together
 
 ## shadcn/ui Usage
@@ -258,7 +260,7 @@ Components are copied to `src/components/ui/` and can be customized.
 
 ### Customizing Components
 
-shadcn components are yours to modify. Common customizations:
+shadcn components are repository-owned and may be modified for shared behavior or semantic variants. Prefer feature-level composition for one-off needs; avoid duplicating primitives. Preserve accessibility and follow the [UI contract](./ui-contract.md), including documented color exceptions. Common customizations:
 
 ```tsx
 // src/components/ui/button.tsx
@@ -358,6 +360,6 @@ This preserves scroll position, form state, and resize dimensions.
 
 - Use raw color values (`bg-white`, `text-gray-900`)
 - Hardcode light/dark specific values
-- Override shadcn components in place (copy and modify instead)
+- Add feature-specific behavior to shared primitives without a shared need and regression tests
 - Add `cursor-pointer` everywhere (only for actual clickable elements)
-- Use viewport-based responsive design (this is a fixed-size desktop app)
+- Assume a single fixed window size; verify supported desktop window bounds and overflow

@@ -16,11 +16,11 @@ Most Tauri starters give you a blank canvas. This template gives you a **working
 
 | Layer    | Technologies                                    |
 | -------- | ----------------------------------------------- |
-| Frontend | React 19, TypeScript, Vite 7                    |
+| Frontend | React 19, TypeScript, Vite 8                    |
 | UI       | shadcn/ui v4, Tailwind CSS v4, Lucide React     |
 | State    | Zustand v5, TanStack Query v5                   |
 | Backend  | Tauri v2, Rust                                  |
-| Testing  | Vitest v4, Testing Library                      |
+| Testing  | Vitest v4, Testing Library, Playwright          |
 | Quality  | ESLint, Prettier, ast-grep, knip, jscpd, clippy |
 
 ## What's Already Built
@@ -61,8 +61,8 @@ Platform detection utilities, platform-specific UI strings ("Reveal in Finder" v
 
 - **Type-safe Tauri commands** - tauri-specta generates TypeScript bindings from Rust, with full autocomplete and compile-time checking
 - **Static analysis** - ESLint, Prettier, ast-grep (architecture enforcement), knip (unused code), jscpd (duplication)
-- **Single quality gate** - `npm run check:all` runs TypeScript, ESLint, Prettier, ast-grep, clippy, and all tests
-- **Testing patterns** - Vitest setup with Tauri command mocking
+- **Single quality gate** - `npm run check:all` runs TypeScript, ESLint, Prettier, ast-grep, clippy, and unit/component tests (browser E2E is separate)
+- **Testing patterns** - Separate logic/component suites, offline browser flows, and explicit Tauri mocking boundaries
 
 ## Tauri Plugins Included
 
@@ -94,14 +94,28 @@ See **[Using This Template](docs/USING_THIS_TEMPLATE.md)** for setup instruction
 ### Quick Start
 
 ```bash
-# Prerequisites: Node.js 18+, Rust (latest stable)
-# See https://tauri.app/start/prerequisites/ for platform-specific deps
+# Prerequisites: Node.js 24+, Rust (latest stable)
+# See https://v2.tauri.app/start/prerequisites/ for platform-specific deps
 
 git clone <your-repo>
 cd your-app
-npm install
+npm ci --include=dev
 npm run dev
 ```
+
+### Daily checks and builds
+
+```bash
+npm run test:frontend   # Node logic and tooling
+npm run test:ui         # jsdom components and Hooks (not Vitest viewer)
+npm run test:backend    # Rust; Cargo must be on PATH
+npm run check:all       # static checks + all unit/component tests
+npm exec playwright -- install chromium
+npm run test:e2e        # offline browser flows; mocked native boundary
+npm run build          # local native installer for this host
+```
+
+`dev:web` / `build:frontend` are browser-only; `build:release` requires completed release configuration. Start with the [testing workflow and command migration guide](docs/developer/testing-workflow.md). See [testing](docs/developer/testing.md), [UI contract](docs/developer/ui-contract.md) and [releases](docs/developer/releases.md) for scopes and native verification limits.
 
 ## Documentation
 

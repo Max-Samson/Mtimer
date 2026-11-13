@@ -15,7 +15,10 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
   publish-tauri:
+    needs: validate
     permissions:
       contents: write
     strategy:
@@ -56,6 +59,11 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Validate public release metadata
+        env:
+          RELEASE_TAG: ${{ inputs.version || github.ref_name }}
+        run: node scripts/check-release.mjs
+
       - name: Build and release
         uses: tauri-apps/tauri-action@dev
         env:
@@ -63,10 +71,10 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name || inputs.version }}
-          releaseName: 'Tauri Template App ${{ github.ref_name || inputs.version }}'
+          tagName: ${{ inputs.version || github.ref_name }}
+          releaseName: 'Tauri Template App ${{ inputs.version || github.ref_name }}'
           releaseBody: |
-            ## Tauri Template App ${{ github.ref_name || inputs.version }}
+            ## Tauri Template App ${{ inputs.version || github.ref_name }}
 
             ### Installation Instructions
             - **macOS**: Download the `.dmg` file and drag to Applications folder
@@ -76,7 +84,7 @@ jobs:
             ### Auto-Updates
             Existing users will receive automatic update notifications.
 
-            **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ github.ref_name || inputs.version }}
+            **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ inputs.version || github.ref_name }}
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true

@@ -24,7 +24,7 @@ export function LinuxTitleBar({ className, title }: LinuxTitleBarProps) {
   return (
     <div
       className={cn(
-        'relative flex h-8 w-full shrink-0 items-center justify-between border-b bg-background',
+        'relative flex h-[var(--app-titlebar-height)] w-full shrink-0 items-center justify-between border-b bg-background',
         className
       )}
     >

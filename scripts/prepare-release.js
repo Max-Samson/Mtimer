@@ -2,7 +2,6 @@
 
 import fs from 'fs'
 import { execSync } from 'child_process'
-import readline from 'readline'
 
 function exec(command, options = {}) {
   try {
@@ -16,26 +15,12 @@ function exec(command, options = {}) {
   }
 }
 
-function askQuestion(question) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  })
-
-  return new Promise(resolve => {
-    rl.question(question, answer => {
-      rl.close()
-      resolve(answer.trim())
-    })
-  })
-}
-
 async function prepareRelease() {
   const version = process.argv[2]
 
   if (!version || !version.match(/^v?\d+\.\d+\.\d+$/)) {
     console.error('❌ Usage: node scripts/prepare-release.js v1.0.0')
-    console.error('   or: npm run prepare-release v1.0.0')
+    console.error('   or: npm run release:prepare -- v1.0.0')
     process.exit(1)
   }
 
@@ -61,7 +46,9 @@ async function prepareRelease() {
     // Run all checks first
     console.log('\n🔍 Running pre-release checks...')
     exec('npm run check:all')
-    console.log('✅ All checks passed')
+    console.log(
+      '✅ Static and unit/component checks passed (browser E2E is separate)'
+    )
 
     // Update package.json
     console.log('\n📝 Updating package.json...')
@@ -102,75 +89,41 @@ async function prepareRelease() {
     exec('npm install', { silent: true })
     console.log('✅ Lock files updated')
 
-    // Verify configurations
-    console.log('\n🔍 Verifying configurations...')
-
-    if (!tauriConfig.bundle?.createUpdaterArtifacts) {
-      console.warn(
-        '⚠️  Warning: createUpdaterArtifacts not enabled in tauri.conf.json'
-      )
-    } else {
-      console.log('✅ Updater artifacts enabled')
-    }
-
-    if (!tauriConfig.plugins?.updater?.pubkey) {
-      console.warn('⚠️  Warning: Updater public key not configured')
-    } else {
-      console.log('✅ Updater public key configured')
-    }
+    // 公开配置检查独立执行；本脚本不读取或管理签名材料。
+    console.log(
+      'ℹ️  Formal release also requires node scripts/check-release.mjs to pass.'
+    )
 
     // Final check that Rust code compiles
     console.log('\n🔍 Running final compilation check...')
-    exec('source ~/.cargo/env && cd src-tauri && cargo check')
+    exec('cargo check --manifest-path src-tauri/Cargo.toml')
     console.log('✅ Rust compilation check passed')
 
     console.log(`\n🎉 Successfully prepared release ${tagVersion}!`)
-    console.log('\n📋 Git commands to execute:')
-    console.log(`   git add .`)
+    console.log(
+      '\n📋 Review changes and complete validation before committing:'
+    )
+    console.log('   npm run test:e2e')
+    console.log(`   node scripts/check-release.mjs ${tagVersion}`)
+    console.log('   git diff')
+    console.log(
+      '   git add package.json package-lock.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json'
+    )
     console.log(`   git commit -m "chore: release ${tagVersion}"`)
     console.log(`   git tag ${tagVersion}`)
-    console.log(`   git push origin main --tags`)
+    console.log('   git push origin HEAD')
+    console.log(`   git push origin ${tagVersion}`)
 
     console.log('\n🚀 After pushing:')
     console.log('   • GitHub Actions will automatically build the release')
     console.log('   • A draft release will be created on GitHub')
     console.log("   • You'll need to manually publish the draft release")
-    console.log('   • Users will receive auto-update notifications')
-
-    // Interactive execution option
-    const answer = await askQuestion(
-      '\n❓ Would you like me to execute these git commands? (y/N): '
+    console.log('   • Verify installers on target platforms before publishing')
+    console.log(
+      '   • Auto-updates require a correctly configured updater and published release'
     )
 
-    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
-      console.log('\n⚡ Executing git commands...')
-
-      console.log('📝 Adding changes...')
-      exec('git add .')
-
-      console.log('💾 Creating commit...')
-      exec(`git commit -m "chore: release ${tagVersion}"`)
-
-      console.log('🏷️  Creating tag...')
-      exec(`git tag ${tagVersion}`)
-
-      console.log('📤 Pushing to remote...')
-      exec('git push origin main --tags')
-
-      console.log(`\n🎊 Release ${tagVersion} has been published!`)
-      console.log(
-        '📱 Check GitHub Actions: https://github.com/YOUR_USERNAME/YOUR_REPO/actions'
-      )
-      console.log(
-        '📦 Draft release will appear at: https://github.com/YOUR_USERNAME/YOUR_REPO/releases'
-      )
-      console.log(
-        '\n⚠️  Remember: You need to manually publish the draft release on GitHub!'
-      )
-    } else {
-      console.log('\n📝 Git commands saved for manual execution.')
-      console.log("   Run them when you're ready to release.")
-    }
+    // 版本准备不自动提交、打标签、推送或发布；由维护者分别审阅并执行。
   } catch (error) {
     console.error('\n❌ Pre-release preparation failed:', error.message)
     process.exit(1)

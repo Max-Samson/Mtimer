@@ -15,7 +15,7 @@ export default tseslint.config(
       ecmaVersion: 2022,
       parser: tseslint.parser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './tsconfig.node.json'],
         ecmaFeatures: {
           jsx: true,
         },
@@ -60,13 +60,17 @@ export default tseslint.config(
   },
   prettierConfig,
   {
+    files: ['tests/e2e/**/*.js'],
+    languageOptions: { globals: { window: 'readonly', location: 'readonly', URLSearchParams: 'readonly', localStorage: 'readonly' } },
+  },
+  {
     files: ['src/components/ui/**/*.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
     rules: {
       'react-refresh/only-export-components': 'off',
     },
   },
   {
-    files: ['scripts/**/*.js'],
+    files: ['scripts/**/*.{js,mjs}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
@@ -93,6 +97,10 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      'test-dist/**',
+      'test-results/**',
+      'playwright-report/**',
+      'coverage/**',
       'node_modules/**',
       'src-tauri/target/**',
       'src-tauri/gen/**',

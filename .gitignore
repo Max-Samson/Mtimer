@@ -25,3 +25,10 @@ jscpd-report
 *.njsproj
 *.sln
 *.sw?
+
+# Generated test artifacts
+test-dist/
+test-results/
+playwright-report/
+coverage/
+*.tsbuildinfo

@@ -36,10 +36,10 @@ Removes Tauri commands not called from your frontend.
 ## Analyzing Bundle Size
 
 ```bash
-npm run build:analyze   # Build and analyze
+npm run build:frontend   # Build and analyze
 
 # Manual analysis
-npm run build
+npm run build:frontend
 du -sh dist/*           # Check output sizes
 ls -lah dist/assets/    # Examine chunks
 ```
@@ -146,7 +146,7 @@ cd src-tauri && cargo build --release
 ls -lah target/release/tauri-app
 
 # Frontend bundle
-npm run build && du -sh dist/
+npm run build:frontend && du -sh dist/
 ```
 
 **Remember**: Measure before optimizing. Don't over-optimize prematurely.

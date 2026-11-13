@@ -25,7 +25,7 @@ export function TitleBarLeftActions() {
         onClick={toggleLeftSidebar}
         variant="ghost"
         size="icon"
-        className="h-6 w-6 text-foreground/70 hover:text-foreground"
+        className="size-[var(--app-toolbar-control-size)] text-foreground/70 hover:text-foreground"
         title={t(
           leftSidebarVisible
             ? 'titlebar.hideLeftSidebar'
@@ -33,9 +33,9 @@ export function TitleBarLeftActions() {
         )}
       >
         {leftSidebarVisible ? (
-          <PanelLeftClose className="h-3 w-3" />
+          <PanelLeftClose className="size-[var(--app-toolbar-icon-size)]" />
         ) : (
-          <PanelLeft className="h-3 w-3" />
+          <PanelLeft className="size-[var(--app-toolbar-icon-size)]" />
         )}
       </Button>
     </div>
@@ -65,17 +65,17 @@ export function TitleBarRightActions() {
         onClick={handleOpenPreferences}
         variant="ghost"
         size="icon"
-        className="h-6 w-6 text-foreground/70 hover:text-foreground"
+        className="size-[var(--app-toolbar-control-size)] text-foreground/70 hover:text-foreground"
         title={t('titlebar.settings')}
       >
-        <Settings className="h-3 w-3" />
+        <Settings className="size-[var(--app-toolbar-icon-size)]" />
       </Button>
 
       <Button
         onClick={toggleRightSidebar}
         variant="ghost"
         size="icon"
-        className="h-6 w-6 text-foreground/70 hover:text-foreground"
+        className="size-[var(--app-toolbar-control-size)] text-foreground/70 hover:text-foreground"
         title={t(
           rightSidebarVisible
             ? 'titlebar.hideRightSidebar'
@@ -83,9 +83,9 @@ export function TitleBarRightActions() {
         )}
       >
         {rightSidebarVisible ? (
-          <PanelRightClose className="h-3 w-3" />
+          <PanelRightClose className="size-[var(--app-toolbar-icon-size)]" />
         ) : (
-          <PanelRight className="h-3 w-3" />
+          <PanelRight className="size-[var(--app-toolbar-icon-size)]" />
         )}
       </Button>
     </div>

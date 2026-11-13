@@ -26,6 +26,7 @@ Technical documentation for building and extending this app. These docs describe
 
 | Document                                   | Description                                 |
 | ------------------------------------------ | ------------------------------------------- |
+| [UI Design Contract](./ui-contract.md)     | 语义 token、例外和可执行布局规则            |
 | [UI Patterns](./ui-patterns.md)            | CSS architecture, shadcn/ui components      |
 | [Internationalization](./i18n-patterns.md) | Translation system, RTL support             |
 | [Notifications](./notifications.md)        | Toast and native notifications              |
@@ -44,6 +45,7 @@ Technical documentation for building and extending this app. These docs describe
 | ----------------------------------------------------- | ------------------------------------------------------- |
 | [Static Analysis](./static-analysis.md)               | ESLint, Prettier, ast-grep, knip, jscpd, React Compiler |
 | [Writing ast-grep Rules](./writing-ast-grep-rules.md) | AI reference for creating custom rules                  |
+| [Testing Workflow](./testing-workflow.md)             | 日常命令选择、旧入口迁移和新增测试流程                  |
 | [Testing](./testing.md)                               | Test patterns, Tauri mocking                            |
 | [Bundle Optimization](./bundle-optimization.md)       | Bundle size management                                  |
 | [Logging](./logging.md)                               | Rust and TypeScript logging                             |

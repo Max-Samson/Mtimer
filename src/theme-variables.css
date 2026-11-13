@@ -50,6 +50,10 @@
 }
 
 :root {
+  /* 桌面工具栏尺寸约定：布局测试使用这些既有尺寸，不另建视觉主题。 */
+  --app-titlebar-height: 2rem;
+  --app-toolbar-control-size: 1.5rem;
+  --app-toolbar-icon-size: 0.75rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

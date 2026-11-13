@@ -19,5 +19,8 @@
         "dragDropEnabled": true
       }
     ]
+  },
+  "bundle": {
+    "targets": ["msi"]
   }
 }

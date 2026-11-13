@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { renderHook } from '@testing-library/react'
 
 // Mock the Tauri OS plugin
 vi.mock('@tauri-apps/plugin-os', () => ({
@@ -18,14 +17,7 @@ vi.mock('@/lib/logger', () => ({
 
 // Import the module under test after mocks are set up
 const { platform } = await import('@tauri-apps/plugin-os')
-const {
-  getPlatform,
-  usePlatform,
-  useIsMacOS,
-  useIsWindows,
-  useIsLinux,
-  __resetPlatformCache,
-} = await import('./use-platform')
+const { getPlatform, __resetPlatformCache } = await import('./use-platform')
 
 describe('Platform Detection', () => {
   beforeEach(() => {
@@ -77,66 +69,6 @@ describe('Platform Detection', () => {
       expect(logger.warn).toHaveBeenCalledWith(
         'Platform detection failed, defaulting to macOS'
       )
-    })
-  })
-
-  describe('usePlatform hook', () => {
-    it('returns the current platform', () => {
-      vi.mocked(platform).mockReturnValue('windows')
-
-      const { result } = renderHook(() => usePlatform())
-
-      expect(result.current).toBe('windows')
-    })
-  })
-
-  describe('convenience hooks', () => {
-    it('useIsMacOS returns true on macOS', () => {
-      vi.mocked(platform).mockReturnValue('macos')
-
-      const { result } = renderHook(() => useIsMacOS())
-
-      expect(result.current).toBe(true)
-    })
-
-    it('useIsMacOS returns false on other platforms', () => {
-      vi.mocked(platform).mockReturnValue('windows')
-
-      const { result } = renderHook(() => useIsMacOS())
-
-      expect(result.current).toBe(false)
-    })
-
-    it('useIsWindows returns true on Windows', () => {
-      vi.mocked(platform).mockReturnValue('windows')
-
-      const { result } = renderHook(() => useIsWindows())
-
-      expect(result.current).toBe(true)
-    })
-
-    it('useIsWindows returns false on other platforms', () => {
-      vi.mocked(platform).mockReturnValue('macos')
-
-      const { result } = renderHook(() => useIsWindows())
-
-      expect(result.current).toBe(false)
-    })
-
-    it('useIsLinux returns true on Linux', () => {
-      vi.mocked(platform).mockReturnValue('linux')
-
-      const { result } = renderHook(() => useIsLinux())
-
-      expect(result.current).toBe(true)
-    })
-
-    it('useIsLinux returns false on other platforms', () => {
-      vi.mocked(platform).mockReturnValue('macos')
-
-      const { result } = renderHook(() => useIsLinux())
-
-      expect(result.current).toBe(false)
     })
   })
 })

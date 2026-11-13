@@ -278,9 +278,9 @@ JSON Merge Patch **replaces arrays entirely**, not element-by-element. Each plat
 npm run dev
 ```
 
-### Production Builds
+### Local Native Packages
 
-Builds are platform-specific. You can only build for your current OS (cross-compilation requires additional setup):
+`npm run build` uses the local configuration with updater artifacts disabled; it is not a signed production release. Builds are platform-specific. You can only build for your current OS (cross-compilation requires additional setup):
 
 ```bash
 # Build for current platform
@@ -297,7 +297,9 @@ The GitHub Actions release workflow builds for all platforms:
 | Windows  | `windows-latest` | `.msi`      |
 | Linux    | `ubuntu-22.04`   | `.AppImage` |
 
-See `.github/workflows/release.yml` for the full configuration.
+The local Linux configuration also enables `.deb`; the release workflow explicitly selects AppImage. Browser platform-appearance tests do not run these operating systems or native WebViews.
+
+Use `npm run build:release` only after completing public release metadata and updater configuration; template placeholders intentionally fail its guard. See [builds and releases](./releases.md) and `.github/workflows/release.yml` for signing, output paths, architecture selection, and target-platform acceptance requirements.
 
 ### Linux Dependencies
 

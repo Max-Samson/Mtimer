@@ -44,7 +44,7 @@ function MockThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 const AllTheProviders = ({ children }: AllTheProvidersProps) => {
-  const queryClient = createTestQueryClient()
+  const [queryClient] = useState(createTestQueryClient)
 
   return (
     <QueryClientProvider client={queryClient}>

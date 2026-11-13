@@ -4,25 +4,27 @@ All static analysis tools configured in this app and how to use them.
 
 ## Quick Reference
 
-| Tool           | Purpose                  | Command                  | In check:all |
-| -------------- | ------------------------ | ------------------------ | ------------ |
-| TypeScript     | Type checking            | `npm run typecheck`      | Yes          |
-| ESLint         | Syntax, style, TS rules  | `npm run lint`           | Yes          |
-| Prettier       | Code formatting          | `npm run format:check`   | Yes          |
-| ast-grep       | Architecture patterns    | `npm run ast:lint`       | Yes          |
-| React Compiler | Automatic memoization    | Build-time               | Yes          |
-| cargo fmt      | Rust formatting          | `npm run rust:fmt:check` | Yes          |
-| clippy         | Rust linting             | `npm run rust:clippy`    | Yes          |
-| Vitest         | Frontend tests           | `npm run test:run`       | Yes          |
-| cargo test     | Rust tests               | `npm run rust:test`      | Yes          |
-| knip           | Unused code detection    | `npm run knip`           | No           |
-| jscpd          | Duplicate code detection | `npm run jscpd`          | No           |
+| Tool           | Purpose                                  | Command                 | In check:all                                        |
+| -------------- | ---------------------------------------- | ----------------------- | --------------------------------------------------- |
+| TypeScript     | Type checking                            | `npm run typecheck`     | Yes                                                 |
+| ESLint         | Syntax, style, TS rules                  | `npm run lint`          | Yes                                                 |
+| Prettier       | Code formatting                          | `npm run format:check`  | Yes                                                 |
+| ast-grep       | Architecture patterns                    | `npm run ast:lint`      | Yes                                                 |
+| UI contract    | Theme imports/tokens and raw color rules | `npm run check:ui`      | Yes                                                 |
+| Playwright     | Browser user flows and layout            | `npm run test:e2e`      | No; separate CI job                                 |
+| React Compiler | Automatic memoization                    | `build:frontend`        | Lint diagnostics only; transform runs at build time |
+| cargo fmt      | Rust formatting                          | `npm run check:backend` | Yes                                                 |
+| clippy         | Rust linting                             | `npm run check:backend` | Yes                                                 |
+| Vitest         | Frontend tests                           | `npm run test:web`      | Yes                                                 |
+| cargo test     | Rust tests                               | `npm run test:backend`  | Yes                                                 |
+| knip           | Unused code detection                    | `npm run knip`          | No                                                  |
+| jscpd          | Duplicate code detection                 | `npm run jscpd`         | No                                                  |
 
 ## Running All Checks
 
 ```bash
 npm run check:all    # Must pass before commits
-npm run fix:all      # Auto-fix what can be fixed
+npm run lint:fix     # Explicit, reviewable fixes; checks never rewrite code
 ```
 
 ## Tool Details
@@ -36,7 +38,7 @@ npm run lint        # Check for issues
 npm run lint:fix    # Auto-fix issues
 ```
 
-Configuration in `eslint.config.js`.
+Configuration in `eslint.config.js`. `check:frontend` also runs `check:ui`; see [UI contract](./ui-contract.md).
 
 React Compiler diagnostics use the existing
 `eslint-plugin-react-hooks` recommended rules. Do not re-add the legacy
@@ -102,11 +104,9 @@ The compiler analyzes code and adds memoization where beneficial.
 ### Rust Tooling
 
 ```bash
-npm run rust:fmt:check   # Check formatting
-npm run rust:fmt         # Fix formatting
-npm run rust:clippy      # Lint with clippy
-npm run rust:clippy:fix  # Auto-fix clippy warnings
-npm run rust:test        # Run Rust tests
+npm run check:backend
+npm run test:backend
+cargo fmt --manifest-path src-tauri/Cargo.toml  # explicit formatting fix
 ```
 
 ### knip (Periodic Cleanup)
@@ -129,11 +129,16 @@ Use the `/cleanup` command for guided analysis and cleanup of both knip and jscp
 
 ## CI Integration
 
-`check:all` runs in CI. Ensure it passes locally before pushing:
+CI runs the frontend, browser and Rust groups as independent jobs; the local `check:all` alias runs static checks and unit/component tests, not browser E2E. Coverage remains separate and is not yet a required PR gate.
+
+CI invokes the grouped scripts directly, not the literal `check:all` alias. Before pushing, run the equivalent local gate and browser tests separately:
 
 ```bash
 npm run check:all
+npm run test:e2e
 ```
+
+See the [workflow and migration guide](./testing-workflow.md) for command changes, missing-tool handling, and the current coverage gap.
 
 ## Adding New Rules
 

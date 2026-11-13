@@ -6,7 +6,10 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "target": "ES2022",
+    "strict": true,
+    "allowImportingTsExtensions": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["*.config.ts", "tests/**/*.ts", "package.json"]
 }

@@ -1,181 +1,56 @@
-# Releases
+# Builds and releases
 
-Release process, version management, and auto-update system.
+## Commands
 
-## Overview
+| Command                  | Result                                    |
+| ------------------------ | ----------------------------------------- |
+| `npm run dev`            | 完整 Tauri 开发应用                       |
+| `npm run dev:web`        | 仅 Vite 浏览器开发                        |
+| `npm run build:frontend` | 前端 `dist/`，不是安装包                  |
+| `npm run build`          | 当前平台本地测试安装包，不生成更新签名    |
+| `npm run build:release`  | 先校验公开发布配置，再构建正式更新产物    |
+| `npm run build:e2e`      | 独立浏览器测试产物 `test-dist/`，不可发布 |
 
-The release system provides:
+环境：Node 24+、Rust stable、目标系统的 Tauri 2 构建依赖。Cargo 必须已在 PATH。参见 [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)。
 
-- Automated GitHub Actions workflow for building releases
-- Version management script for updating all version files
-- Auto-updater for seamless user updates
-- Cross-platform builds (macOS, Windows, Linux)
+Tauri 的 `beforeDevCommand` 调用 `dev:web`，`beforeBuildCommand` 调用 `build:frontend`；不要改回 `dev` / `build`，否则递归调用 Tauri。
 
-## Initial Setup
+## Platforms and output
 
-### 1. Generate Signing Keys
-
-```bash
-npm install -g @tauri-apps/cli
-tauri signer generate -w ~/.tauri/myapp.key
-# Outputs private key (saved) and public key (displayed)
-```
-
-### 2. Configure GitHub Repository
-
-Add these secrets (Settings → Secrets and variables → Actions):
-
-- `TAURI_PRIVATE_KEY`: Content of `~/.tauri/myapp.key`
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Password you set (if any)
-
-### 3. Update Configuration
-
-**`src-tauri/tauri.conf.json`:**
-
-```json
-{
-  "plugins": {
-    "updater": {
-      "active": true,
-      "endpoints": [
-        "https://github.com/YOUR_USERNAME/YOUR_REPO/releases/latest/download/latest.json"
-      ],
-      "dialog": false,
-      "pubkey": "YOUR_PUBLIC_KEY_FROM_STEP_1"
-    }
-  }
-}
-```
-
-**Bundle info in `tauri.conf.json`:**
-
-- Update `publisher`, `shortDescription`, `longDescription`
-- Update `productName` and `identifier`
-
-## Release Process
-
-### Simple Method
+对应平台配置明确指定：macOS `app,dmg`，Windows `msi`，Linux `appimage,deb`。默认生成当前宿主架构，通常输出 `src-tauri/target/release/bundle/`。
 
 ```bash
-npm run release:prepare v1.0.0
+# 在对应系统上运行
+npm run build
+
+# Mac Universal：先安装两个 Rust target，再显式选择
+rustup target add aarch64-apple-darwin x86_64-apple-darwin
+npm run build -- --target universal-apple-darwin
 ```
 
-This will:
+显式 target 输出位于 `src-tauri/target/<target>/release/bundle/`。不能把跨架构编译理解为任意宿主都能生成所有系统安装包。MSI 在 Windows 上构建。
 
-1. Check git status is clean
-2. Run all quality checks (`npm run check:all`)
-3. Update versions in `package.json`, `Cargo.toml`, `tauri.conf.json`
-4. Ask if you want to commit and push
+`tauri.local-build.conf.json` 只覆盖本地构建：关闭更新产物生成并清空更新 endpoint；不等于正式代码签名/公证。原始正式 updater 配置保持独立。
 
-Then GitHub Actions will:
+## Release safety
 
-1. Build the app for all platforms
-2. Create a draft release
-3. Generate `latest.json` for auto-updates
-4. Upload all installers and signatures
+`check-release.mjs` 只读公开配置，检查三个版本号、模板名称/identifier、HTTPS updater endpoint 和公钥是否仍是占位内容。它不访问/验证签名私钥，也不证明签名、公证和安装已经通过。
 
-Finally, manually publish the draft release on GitHub.
-
-### Manual Method
+当前模板占位内容尚未填写，因此 `npm run build:release` 应明确失败；不要关闭校验绕过。私钥、证书、密码由维护者自行通过安全设置管理，不提交仓库或粘贴到聊天。
 
 ```bash
-# Update versions in package.json, Cargo.toml, tauri.conf.json
-npm run check:all
-git add .
-git commit -m "chore: release v1.0.0"
-git tag v1.0.0
-git push origin main --tags
+# 仅准备版本；会改版本文件和 lock，需要审阅
+npm run release:prepare -- v0.1.1
 ```
 
-## Version Strategy
+准备脚本先跑完整检查，再更新版本；不自动提交、创建标签、推送或发布。随后维护者单独审阅、提交，推送指定的 `v*` 标签触发发布。避免 `--tags` 意外推送无关标签。
 
-Semantic versioning (`v1.0.0`):
+## CI and release pipeline
 
-- **Major** (1.x.x): Breaking changes
-- **Minor** (x.1.x): New features, backwards compatible
-- **Patch** (x.x.1): Bug fixes
+- `.github/workflows/ci.yml` 在 PR / main 上运行前端静态/逻辑/组件检查、浏览器 E2E，以及三平台 Rust 检查/测试；也支持被发布流程调用。
+- 发布 workflow 的构建任务依赖这份校验，不能仅以“构建成功”替代测试。
+- 标签推送或手动输入版本后创建 Draft Release；手动输入优先于分支名，并检查 tag 与应用版本匹配。
+- 默认 main 推送不会发布安装包。Draft 必须在目标平台验收后再手动发布。
+- 浏览器失败报告上传为 artifact。CI 尚未运行前只能说配置已建立，不能宣称三平台已通过。
 
-All three files must have matching versions:
-
-- `package.json` → `"version": "1.0.0"`
-- `src-tauri/Cargo.toml` → `version = "1.0.0"`
-- `src-tauri/tauri.conf.json` → `"version": "1.0.0"`
-
-## Auto-Update System
-
-### Behavior
-
-- Checks for updates 5 seconds after app launch
-- Shows confirmation dialog when update is available
-- Downloads and installs in background
-- Offers to restart when complete
-- Fails silently on network issues
-
-### Update Flow
-
-```
-App Launch → (5s delay) → Check GitHub → Show Dialog → Download → Install → Restart
-```
-
-### Implementation
-
-```typescript
-// src/App.tsx
-import { check } from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
-
-useEffect(() => {
-  const checkForUpdates = async () => {
-    try {
-      const update = await check()
-      if (update) {
-        const shouldUpdate = confirm(`Update available: ${update.version}...`)
-        if (shouldUpdate) {
-          await update.downloadAndInstall()
-          if (confirm('Restart to apply update?')) {
-            await relaunch()
-          }
-        }
-      }
-    } catch {
-      // Silent fail - don't bother user with network issues
-    }
-  }
-
-  const timer = setTimeout(checkForUpdates, 5000)
-  return () => clearTimeout(timer)
-}, [])
-```
-
-### Manual Update Check
-
-Users can manually check via:
-
-- **Menu**: App → Check for Updates
-- **Command Palette**: Cmd+K → "Check for Updates"
-
-## Release Artifacts
-
-Each release creates:
-
-- **macOS**: `.dmg` installer
-- **Windows**: `.msi` installer (when configured)
-- **Linux**: `.deb` and `.AppImage` (when configured)
-- **Auto-updater**: `latest.json` manifest and `.sig` signature files
-
-## Security
-
-All updates are cryptographically signed:
-
-1. Private key signs releases during build
-2. Public key in config verifies downloads
-3. Invalid signatures are automatically rejected
-
-## Troubleshooting
-
-| Issue                    | Solution                                              |
-| ------------------------ | ----------------------------------------------------- |
-| Workflow doesn't trigger | Ensure tag starts with `v` and is pushed              |
-| Build fails              | Check GitHub secrets, run `npm run check:all` locally |
-| Updates not detected     | Verify endpoint URL and public key match              |
-| Download fails           | Check signatures, file permissions, disk space        |
+正式发布仍需配置真实产品信息、updater endpoint/public key、OS 签名/公证。macOS 当前 `signingIdentity: "-"` 为 ad-hoc；Windows 未签名安装可能受到系统安全策略限制。

@@ -6,19 +6,19 @@ This document is specific to the template and should be deleted once you're comf
 
 Before you begin, install:
 
-- **Node.js** (v18+) - [nodejs.org](https://nodejs.org/)
+- **Node.js** (v24+) - [nodejs.org](https://nodejs.org/)
 - **Rust** (latest stable) - [rustup.rs](https://rustup.rs/)
 - **Platform dependencies**:
   - **macOS**: `xcode-select --install`
   - **Windows**: [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-  - **Linux**: See [Tauri prerequisites](https://tauri.app/start/prerequisites/)
+  - **Linux**: See [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 Then clone this template and install dependencies:
 
 ```bash
 git clone <your-repo-url>
 cd <your-project>
-npm install
+npm ci --include=dev
 ```
 
 ## Quick Setup (Claude Code)
@@ -32,7 +32,7 @@ If you're using Claude Code, run the `/init` command:
 This will prompt you for your app name and description, then automatically update all configuration files. Once complete, verify everything works:
 
 ```bash
-npm run tauri:dev
+npm run dev
 ```
 
 ## Manual Setup
@@ -44,14 +44,14 @@ If you're not using Claude Code, update these files manually:
 | File                            | Fields to Update                                                               |
 | ------------------------------- | ------------------------------------------------------------------------------ |
 | `package.json`                  | `name`, `description`                                                          |
-| `src/index.html`                | `<title>` tag                                                                  |
+| `index.html`                    | `<title>` tag                                                                  |
 | `src-tauri/tauri.conf.json`     | `productName`, `identifier`, `windows[0].title`, bundle info, updater endpoint |
 | `src-tauri/Cargo.toml`          | `name`, `description`, `authors`                                               |
 | `.github/workflows/release.yml` | Workflow name, release name                                                    |
 | `AGENTS.md`                     | Overview section with app name/description                                     |
 | `README.md`                     | Replace template references with your app                                      |
 | `docs/SECURITY.md`              | Replace `YOUR_SECURITY_EMAIL` placeholder                                      |
-| `docs/CONTRIBUTING.md`          | Replace `YOUR_USERNAME/YOUR_REPO` placeholder                                  |
+| `docs/CONTRIBUTING.md`          | Check repository URL and contribution workflow                                 |
 
 ### Identifier Format
 
@@ -67,7 +67,7 @@ gh api user --jq .login
 
 ```bash
 npm run check:all
-npm run tauri:dev
+npm run dev
 ```
 
 ## Example AI Workflow
@@ -86,7 +86,9 @@ Build the feature, running quality checks periodically:
 npm run check:all
 ```
 
-This runs TypeScript, ESLint, Prettier, Rust checks, and tests in one command.
+This runs TypeScript, ESLint, Prettier, architecture/UI checks, Rust checks, and unit/component tests in one command. Browser E2E is separate: install Chromium with `npm exec playwright -- install chromium`, then run `npm run test:e2e`.
+
+See the [workflow and command migration guide](developer/testing-workflow.md) before reusing older template commands: `dev` now starts Tauri, `build` produces a local native package, and `test:ui` selects component tests rather than a results viewer. Missing native tools must be reported as unverified checks, not skipped successes.
 
 ### 3. Check Before Finishing
 
@@ -142,7 +144,7 @@ See [docs/developer/releases.md](developer/releases.md) for the full release pro
 
 ## Next Steps
 
-1. **Try the app**: `npm run tauri:dev`
+1. **Try the app**: `npm run dev`
 2. **Explore features**: Open command palette (Cmd+K), check preferences (Cmd+,)
 3. **Read the docs**: Start with [docs/developer/architecture-guide.md](developer/architecture-guide.md)
 4. **Set up releases**: Follow the GitHub Releases section above if using CI/CD

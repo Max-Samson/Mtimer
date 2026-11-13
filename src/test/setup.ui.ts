@@ -1,5 +1,6 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import '@testing-library/jest-dom/vitest'
+import { afterEach, vi } from 'vitest'
+import { cleanup } from '@testing-library/react'
 
 // Mock matchMedia for tests
 Object.defineProperty(window, 'matchMedia', {
@@ -31,9 +32,10 @@ vi.mock('@tauri-apps/plugin-updater', () => ({
 vi.mock('@/lib/tauri-bindings', () => ({
   commands: {
     greet: vi.fn().mockResolvedValue('Hello, test!'),
-    loadPreferences: vi
-      .fn()
-      .mockResolvedValue({ status: 'ok', data: { theme: 'system' } }),
+    loadPreferences: vi.fn().mockResolvedValue({
+      status: 'ok',
+      data: { theme: 'system', language: 'en', quick_pane_shortcut: null },
+    }),
     savePreferences: vi.fn().mockResolvedValue({ status: 'ok', data: null }),
     sendNativeNotification: vi
       .fn()
@@ -49,3 +51,10 @@ vi.mock('@/lib/tauri-bindings', () => ({
     throw result
   }),
 }))
+
+// 项目关闭 globals，显式注册组件卸载，防止文件内测试相互污染。
+afterEach(() => {
+  cleanup()
+  localStorage.clear()
+  document.documentElement.className = ''
+})

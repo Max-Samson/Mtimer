@@ -6,16 +6,17 @@ Thank you for your interest in contributing!
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18+)
+- [Node.js](https://nodejs.org/) (v24+)
 - [Rust](https://rustup.rs/) (latest stable)
+- Target-platform [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)
 - Familiarity with React, TypeScript, and Rust
 
 ### Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git
-cd YOUR_REPO
-npm install
+git clone https://github.com/Max-Samson/Mtimer.git
+cd Mtimer
+npm ci --include=dev
 npm run dev
 npm run check:all
 ```
@@ -33,7 +34,7 @@ npm run check:all
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make changes following the guidelines below
-4. Ensure checks pass: `npm run check:all`
+4. Run `npm run check:all`, `npm run test:e2e`, and `npm run build:frontend`; record failures or unavailable native checks explicitly
 5. Commit using conventional commits
 6. Push and open a Pull Request
 
@@ -48,7 +49,7 @@ npm run check:all
 ### Rust
 
 - Use `cargo fmt` and `cargo clippy`
-- Use `Result<T, String>` for Tauri commands
+- Use typed `Result` errors for Tauri commands, preserving the existing generated frontend contract
 - See `docs/developer/rust-architecture.md`
 
 ## Quality Gates
@@ -58,9 +59,21 @@ All PRs must pass:
 - TypeScript type checking
 - ESLint and Prettier
 - Rust formatting and clippy
-- Tests
+- Frontend logic/component and Rust tests
+- Offline Chromium user flows/layout checks
+- Dependency audit
 
-Run locally: `npm run check:all`
+```bash
+npm run check:all
+npm exec playwright -- install chromium  # first setup / browser version change
+npm run test:e2e
+npm run build:frontend
+npm audit --include=dev
+```
+
+`check:all` includes static checks and frontend/Rust unit tests, not browser E2E or coverage. The frontend production build is an additional local recommendation, not currently a separate required CI job. Missing Cargo is a failed/incomplete full gate, not a successful frontend-only check. Full-source coverage is currently below the retained 60% thresholds; do not lower thresholds or exclude uncovered code to hide this gap.
+
+See [workflow and command migration](developer/testing-workflow.md), [test boundaries](developer/testing.md), [UI contract](developer/ui-contract.md), and [local packaging vs release](developer/releases.md). Configured CI jobs must actually pass before merge; a local commit is not evidence of cross-platform validation.
 
 ## Commit Messages
 

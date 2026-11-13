@@ -21,3 +21,9 @@ src/lib/bindings.ts
 
 # Logs
 *.log
+# Generated test artifacts
+test-dist/
+test-results/
+playwright-report/
+coverage/
+*.tsbuildinfo

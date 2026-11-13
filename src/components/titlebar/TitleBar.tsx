@@ -50,7 +50,7 @@ export function TitleBar({ className, title, forcePlatform }: TitleBarProps) {
       <div
         data-tauri-drag-region
         className={cn(
-          'relative flex h-8 w-full shrink-0 items-center justify-between border-b bg-background',
+          'relative flex h-[var(--app-titlebar-height)] w-full shrink-0 items-center justify-between border-b bg-background',
           className
         )}
       >
@@ -76,7 +76,7 @@ export function TitleBar({ className, title, forcePlatform }: TitleBarProps) {
     <div
       data-tauri-drag-region
       className={cn(
-        'relative flex h-8 w-full shrink-0 items-center justify-between border-b bg-background',
+        'relative flex h-[var(--app-titlebar-height)] w-full shrink-0 items-center justify-between border-b bg-background',
         className
       )}
     >

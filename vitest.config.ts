@@ -1,46 +1,42 @@
-import path from 'path'
+import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
+// 两组互斥收集；逻辑测试不加载 DOM、原生接口 Mock 或组件清理。
 export default defineConfig({
-  plugins: [
-    react({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),
-  ],
+  plugins: [react()],
+  resolve: { alias: { '@': resolve(import.meta.dirname, 'src') } },
   test: {
-    globals: true,
-    environment: 'jsdom',
-    // Node 25+ ships a global localStorage that is undefined without
-    // --localstorage-file and shadows jsdom's, so turn it off in test workers.
-    execArgv:
-      Number(process.versions.node.split('.')[0]) >= 25
-        ? ['--no-experimental-webstorage']
-        : [],
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: [
-      'node_modules',
-      'dist',
-      'src-tauri',
-      '.git',
-      '.cache',
-      'build',
+    allowOnly: !process.env.CI,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'frontend',
+          environment: 'node',
+          include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.mjs'],
+          exclude: ['src/**/*.ui.test.{ts,tsx}'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'ui',
+          environment: 'jsdom',
+          setupFiles: ['./src/test/setup.ui.ts'],
+          include: ['src/**/*.ui.test.{ts,tsx}'],
+          execArgv: Number(process.versions.node.split('.')[0]) >= 25
+            ? ['--no-experimental-webstorage'] : [],
+        },
+      },
     ],
     coverage: {
       provider: 'v8',
-      thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 60,
-      },
-    },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+      // 保留现有阈值，并纳入未被导入的源码，避免虚假的高覆盖率。
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.*', 'src/test/**', 'src/lib/bindings.ts', 'src/main.tsx', 'src/quick-pane.tsx'],
+      reporter: ['text', 'html', 'json-summary'],
+      thresholds: { lines: 60, functions: 60, branches: 60 },
     },
   },
 })
